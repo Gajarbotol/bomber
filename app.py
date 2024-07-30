@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template
+from flask import Flask, request, jsonify
 import requests
 import os
 
@@ -35,6 +35,22 @@ def index():
         messages = send_sms(phone_number, count)
         return render_template('index.html', messages=messages)
     return render_template('index.html', messages=messages)
+
+@app.route('/sms.php', methods=['GET'])
+def sms_api():
+    phone_number = request.args.get('number')
+    amount = request.args.get('amount')
+    
+    if not phone_number or not amount:
+        return jsonify({'error': 'Number and amount are required'}), 400
+    
+    try:
+        count = int(amount)
+    except ValueError:
+        return jsonify({'error': 'Amount must be a number'}), 400
+
+    messages = send_sms(phone_number, count)
+    return jsonify({'messages': messages})
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 81))
